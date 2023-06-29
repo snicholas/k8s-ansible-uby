@@ -1,0 +1,98 @@
+- name: add Kubernetes' YUM repository
+  yum_repository:
+   name: Kubernetes
+   description: Kubernetes YUM repository
+   baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+   gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+   gpgcheck: yes
+   enabled:  yes
+   repo_gpgcheck: yes
+
+- name: update the system
+  yum:
+    name: "*"
+    state: latest
+    update_only: yes
+  async: 1800 # maximum runtime - 30 min
+
+- name: install versionlock
+  yum:
+    name: yum-plugin-versionlock
+    state: present
+
+- name: check if requested k8s's version lock exists
+  become: yes
+  shell: yum versionlock list | grep -c kubelet
+  register: kubelet_locked
+  args:
+    warn: false
+  failed_when: False
+  changed_when: False
+  check_mode: False
+
+- name: Remove lock for k8s's pkgs version
+  become: yes
+  shell: yum versionlock delete *{{ item }}*
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl
+  args:
+    warn: false
+  when:
+    - kubelet_locked is defined
+    - kubelet_locked.stdout|int != 0
+
+#remove previuos k8s installation
+- name: remove kubelet kubeadm kubectl
+  yum:
+    name: "{{ packages }}"
+    state: absent
+    update_cache: yes
+    conf_file: /tmp/yum_no_obsolete.conf
+  vars:
+    packages:
+      - kubelet
+      - kubeadm
+      - kubectl
+
+- name: install kubernetes "{{ k8s.kube_version }}-0"
+  yum:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - kubelet-{{ k8s.kube_version}}-0
+      - kubeadm-{{ k8s.kube_version }}-0
+      - kubectl-{{ k8s.kube_version}}-0
+
+- name: lock of kubelet kubeadm kubectl at version {{ k8s.kube_version }}-0
+  shell: "yum versionlock add {{ item }}-{{ k8s.kube_version }}-0"
+  become: yes
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl
+  args:
+    warn: false
+
+- name: start kubelet
+  service:
+    name: kubelet
+    enabled: yes
+    state: started
+
+- name: enable service kubelet and ensure it is not masked
+  systemd:
+    name: kubelet
+    enabled: yes
+    masked: no
+
+
+- name: Install useful python libs for ansible's modules
+  yum:
+    state: present
+    name:
+      - python2-kubernetes
+      - python2-openshift
+

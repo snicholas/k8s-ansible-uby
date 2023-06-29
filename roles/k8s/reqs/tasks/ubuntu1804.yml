@@ -1,0 +1,62 @@
+- name: Add an apt signing key for Docker
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add apt repository for stable version
+  apt_repository:
+    repo: deb [arch=amd64] https://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+
+- name: update the system
+  apt:
+    name: "*"
+    state: latest
+    update_cache: yes
+  async: 1800 # maximum runtime - 30 min
+
+#different to centos, this is not so important
+# - name: Unhold version of kubelet kubeadm kubectl
+#   shell: apt unhold kubelet kubeadm kubectl
+#   become: yes
+
+- name: install kubelet kubeadm
+  apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: absent
+
+
+
+- name: install kubelet kubeadm
+  apt:
+    name:
+    - "kubelet={{ k8s.kube_version }}-00"
+    - "kubeadm={{ k8s.kube_version }}-00"
+    - "kubectl={{ k8s.kube_version }}-00"
+    state: present
+
+# - name: Hold version of kubelet kubeadm kubectl
+#   shell: apt hold kubelet kubeadm kubectl
+#   become: yes
+
+- name: start kubelet
+  service:
+    name: kubelet
+    enabled: yes
+    state: started
+
+- name: enable service kubelet and ensure it is not masked
+  systemd:
+    name: kubelet
+    enabled: yes
+    masked: no
+
+- name: Install useful python libs for ansible's modules
+  apt:
+    state: present
+    name:
+      - python-kubernetes
+ #     - python2-openshift

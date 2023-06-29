@@ -1,0 +1,27 @@
+- name: Kubernetes get nodes
+  command: kubectl get nodes -o wide
+  register: kubectl_get_nodes
+- debug: var=kubectl_get_nodes
+
+- name: Kubernetes get namespaces
+  command: kubectl get namespaces
+  register: kubectl_get_namespaces
+- debug: var=kubectl_get_namespaces
+
+- name: Kubernetes get pv
+  command: kubectl get pv
+  register: kubectl_get_pv
+- debug: var=kubectl_get_pv
+
+- name: Kubernetes get sc
+  command: kubectl get sc
+  register: kubectl_get_sc
+- debug: var=kubectl_get_sc
+
+- name: Kubernetes get pvc
+  command: kubectl get pvc -n vcloud
+  register: kubectl_get_pvc
+- debug: var=kubectl_get_pvc
+
+
+

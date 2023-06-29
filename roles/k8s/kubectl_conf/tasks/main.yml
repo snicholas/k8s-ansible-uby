@@ -1,0 +1,47 @@
+
+- name: Create .kube folder for {{ansible_user}}
+  file:
+    path: "~{{ ansible_user }}/.kube"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Copy admin.conf to .kube folder
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "~{{ ansible_user }}/.kube/config"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    remote_src: yes
+
+- name: create root .kube directory
+  become: true
+  file:
+    path: "/root/.kube"
+    state: directory
+
+- name: Copy admin.conf to .kube folder
+  become: yes
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "/root/.kube/config"
+    remote_src: yes
+
+
+
+#- name: Setup kubeconfig for user
+#  become: true
+#  command: "{{ item }}"
+#  with_items:
+#    - cp -i /etc/kubernetes/admin.conf /home/{{username}}/.kube/config
+#    - cp -i /etc/kubernetes/admin.conf /root/.kube/config
+#    - chown {{username}}:{{username}} /home/{{username}}/.kube/config
+
+#- name: fix .kube premissions
+#  become: true
+#  file:
+#    path: "/home/{{username}}/.kube"
+#    state: directory
+#    recurse: yes
+#    owner: "{{username}}"
+#    group: "{{username}}"

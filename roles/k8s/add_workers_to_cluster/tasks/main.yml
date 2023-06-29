@@ -1,0 +1,5 @@
+- name: Store join command
+  action: copy content="{{ hostvars[groups['master'][0]].kubeadm_join }}" dest="/tmp/kubeadm-join.sh"
+
+- name: Execute add node
+  command: /bin/sh /tmp/kubeadm-join.sh

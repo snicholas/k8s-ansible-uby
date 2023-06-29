@@ -1,0 +1,16 @@
+- name: Install weave.works pod network
+  shell: kubectl apply -f "https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml"
+
+- name: Wait 60 seconds
+  wait_for:
+    timeout: 60
+
+# Patch only for previous k8s versions
+#- name: Patch weavenet
+#  shell: "kubectl -n kube-system get deployment coredns -o yaml | sed 's/allowPrivilegeEscalation: false/allowPrivilegeEscalation: true/g' | kubectl apply -f -"
+
+- name: Restart kubelet
+  service:
+    name: kubelet
+    daemon_reload: yes
+    state: restarted

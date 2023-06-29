@@ -1,0 +1,84 @@
+- name: remove centos7 old version
+  become: yes
+  apt:
+    name:
+      - docker
+      - docker-client
+      - docker-client-latest
+      - docker-common
+      - docker-latest
+      - docker-latest-logrotate
+      - docker-logrotate
+      - docker-engine
+    state: absent
+
+- name: install docker dependencies
+  become: yes
+  apt:
+    name:
+      - apt-transport-https 
+      - ca-certificates 
+      - curl 
+      - gnupg-agent 
+      - software-properties-common
+      - thin-provisioning-tools
+      - lvm2
+      - policycoreutils-python-utils
+      - python3-pip
+      - python3-docker
+    state: present
+
+- name: Add an apt signing key for Docker
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add apt repository for stable version
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+    state: present
+
+- name: install "docker-ce{{ reqs.docker_version }}" and "containerd.io{{ reqs.containerd_version }}"
+  become: yes
+  apt:
+    name:
+    - "docker-ce{{ reqs.docker_version }}"
+    - "docker-ce-cli{{ reqs.docker_version }}"
+    - "containerd.io{{ reqs.containerd_version }}"
+    state: present
+    update_cache: true
+
+
+#enable user to use manage docker
+- name: set user {{ ansible_user }} permission to user docker
+  become: yes
+  shell: usermod -aG docker {{ ansible_user }}
+
+- name: Check if docker directory exists
+  stat:
+    path: /etc/docker
+  register: output_folder
+
+- name: Create output directory if not exists
+  file:
+    path: /etc/docker
+    state: directory
+  when: output_folder.stat.exists == false
+
+- name: set up the Docker daemon (copy daemon.json)
+  become: yes
+  copy: src=files/daemon.json dest=/etc/docker/daemon.json
+
+- name: enable service docker and ensure it is not masked
+  become: yes
+  systemd:
+    name: docker
+    enabled: yes
+    masked: no
+
+- name: start Docker
+  become: yes
+  service:
+    name: docker
+    state: started
+

@@ -1,0 +1,7 @@
+# namespace vcloud
+- name: create "federated-catalogue" namespace
+  command: kubectl create namespace federated-catalogue
+
+# user: vcloud
+# get_token
+

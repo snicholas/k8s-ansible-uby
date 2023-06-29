@@ -1,0 +1,3 @@
+- name: Copy join command to local file
+  become: true
+  local_action: copy content="{{ hostvars[groups['master'][0]].kubeadm_join }}"  dest="./{{all.clustername}}.joincmd"

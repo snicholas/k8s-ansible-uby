@@ -1,0 +1,26 @@
+
+- name: Setup kubeconfig for user
+  become: true
+  command: cp -i "/etc/kubernetes/admin.conf" "/tmp/{{ all.clustername}}.kubeconfig"
+
+- name: replace default context name with custom
+  become: true
+  replace:
+    path: "/tmp/{{ all.clustername }}.kubeconfig"
+    regexp: 'kubernetes'
+    replace: "{{all.clustername}}"
+
+- name: replace private ip with public
+  become: true
+  replace:
+    path: "/tmp/{{ all.clustername }}.kubeconfig"
+    regexp: 'https://\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:6443'
+    replace: "https://{{ all.public_ip }}:6443"
+
+
+- name: Download kube config file
+  become: false
+  fetch:
+    src: "/tmp/{{ all.clustername }}.kubeconfig"
+    dest: "../../clusters/{{ all.clustername }}.kubeconfig"
+    flat: yes

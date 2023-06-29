@@ -1,0 +1,51 @@
+- name: remove kubelet kubeadm
+  apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+      - kubernetes-cni
+      
+    state: absent
+
+- name: install kubelet kubeadm
+  apt:
+    name:
+    - "kubelet={{ k8s.kube_version }}-00"
+    - "kubeadm={{ k8s.kube_version }}-00"
+    - "kubectl={{ k8s.kube_version }}-00"
+    - "kubernetes-cni"
+#     state: present
+
+- name: Copy yamls to server
+  copy: src=files/kubernetes.conf dest=/etc/sysctl.d/kubernetes.conf
+
+- name: restart sysctl
+  shell: sysctl --system
+
+- name: unmask containerd
+  shell: systemctl unmask containerd 
+
+- name: clean and restart containerd
+  shell: systemctl restart containerd 
+
+- name: kubeadm config images pull
+  shell: kubeadm config images pull
+  
+- name: start kubelet
+  service:
+    name: kubelet
+    enabled: yes
+    state: started
+
+- name: enable service kubelet and ensure it is not masked
+  systemd:
+    name: kubelet
+    enabled: yes
+    masked: no
+
+- name: Install useful python libs for ansible's modules
+  apt:
+    state: present
+    name:
+      - python3-kubernetes

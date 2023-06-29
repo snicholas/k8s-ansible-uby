@@ -1,0 +1,8 @@
+- name: Download helm3 installer
+  shell: curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+
+- name: set permissions
+  shell: chmod 700 get_helm.sh
+
+- name: helm3 install
+  shell: ./get_helm.sh

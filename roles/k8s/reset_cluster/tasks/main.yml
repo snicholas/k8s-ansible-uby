@@ -1,0 +1,15 @@
+- name: reset old cluster (if preset)
+  become: true
+  shell: kubeadm reset -f
+
+- name: reset kubectl config (if present)
+  become: true
+  file:
+    path: /root/.kube
+    state: absent
+
+- name: reset user kubectl config (if present)
+  become: true
+  file:
+    path: /home/{{all.username}}/.kube
+    state: absent

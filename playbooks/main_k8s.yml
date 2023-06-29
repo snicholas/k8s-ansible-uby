@@ -1,0 +1,31 @@
+- hosts: all
+  name: Install prerequisites for Ubuntu on all nodes
+  become: yes
+  roles:
+    # - ubuntu2204/prerequisite
+    # - ubuntu2204/containerd
+    # - ubuntu2204/cleanup
+    # - k8s/reqs
+
+- hosts: master #init master
+  roles:
+    # - k8s/reset_cluster
+    # - k8s/init_cluster
+    - k8s/get_join_cmd
+
+- hosts: nodes
+  roles:
+    - k8s/reset_cluster
+    - k8s/add_workers_to_cluster
+
+- hosts: master
+  become: yes
+  roles:
+    - k8s/kubectl_conf
+    - k8s/weavenet
+    - k8s/storageclass
+    - k8s/set_workspace
+    - k8s/helm3
+    - k8s/nginx_ingress
+    # - k8s/metallb
+    # - k8s/test_cluster

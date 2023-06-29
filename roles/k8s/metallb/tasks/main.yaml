@@ -1,0 +1,14 @@
+- name: Install metallb native
+  shell: kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.9/config/manifests/metallb-native.yaml
+
+- name: Wait 60 seconds
+  wait_for:
+    timeout: 60
+
+- name: Template mlb.yaml
+  template:
+    src: files/mlb.yaml.j2
+    dest: /tmp/mlb.yaml
+
+- name: Apply metallb config
+  shell: kubectl apply -f /tmp/mlb.yaml

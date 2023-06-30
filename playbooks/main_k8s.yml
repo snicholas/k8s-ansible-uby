@@ -2,15 +2,15 @@
   name: Install prerequisites for Ubuntu on all nodes
   become: yes
   roles:
-    # - ubuntu2204/prerequisite
-    # - ubuntu2204/containerd
-    # - ubuntu2204/cleanup
-    # - k8s/reqs
+    - ubuntu2204/prerequisite
+    - ubuntu2204/containerd
+    - ubuntu2204/cleanup
+    - k8s/reqs
 
 - hosts: master #init master
   roles:
-    # - k8s/reset_cluster
-    # - k8s/init_cluster
+    - k8s/reset_cluster
+    - k8s/init_cluster
     - k8s/get_join_cmd
 
 - hosts: nodes
